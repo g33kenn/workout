@@ -1,1 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Workout Stopwatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Font for Numbers to prevent jumping */
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000;
+            color: #ffffff;
+            touch-action: manipulation; /* Improves touch response */
+            -webkit-tap-highlight-color: transparent;
+        }
 
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Prevent text selection */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Custom button press effect */
+        .btn-press:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="h-screen w-full flex flex-col justify-between overflow-hidden no-select p-4">
+
+    <!-- Top Bar: Reset Button -->
+    <div class="w-full flex justify-end h-12 items-start">
+        <button onclick="resetTimer()" 
+            class="text-xs text-red-400 border border-red-900 bg-red-900/20 px-3 py-2 rounded-lg btn-press hover:bg-red-900/40 transition-colors uppercase tracking-widest font-bold">
+            Reset
+        </button>
+    </div>
+
+    <!-- Main Display Area -->
+    <div class="flex-grow flex flex-col justify-center items-center space-y-8">
+        
+        <!-- Sets Counter -->
+        <div class="text-center">
+            <div class="text-gray-500 text-sm uppercase tracking-widest mb-1">Sets Completed</div>
+            <div id="setsDisplay" class="text-8xl font-bold text-blue-500 mono-font">0</div>
+        </div>
+
+        <!-- Main Stopwatch (Recovery/Interval Timer) -->
+        <div class="text-center w-full">
+            <div class="text-gray-500 text-sm uppercase tracking-widest mb-2">Current Interval</div>
+            <div id="mainTimerDisplay" class="text-7xl font-bold text-white mono-font tracking-tighter">00:00</div>
+            <div id="mainMilliseconds" class="text-2xl text-gray-600 mono-font font-medium mt-1">.00</div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Controls Area -->
+    <div class="w-full pb-8">
+        <!-- Main Buttons -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <!-- Lap Button -->
+            <button id="lapBtn" onclick="lapTimer()" 
+                class="h-24 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700">
+                Lap
+            </button>
+
+            <!-- Start/Pause Button -->
+            <button id="startBtn" onclick="toggleTimer()" 
+                class="h-24 rounded-2xl bg-green-900/80 text-green-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-green-800">
+                Start
+            </button>
+        </div>
+
+        <!-- Total Time -->
+        <div class="text-center border-t border-gray-800 pt-4">
+            <span class="text-gray-500 text-xs uppercase tracking-wide">Total Session Time</span>
+            <div id="totalTimeDisplay" class="text-xl text-gray-400 mono-font mt-1">00:00:00</div>
+        </div>
+    </div>
+
+    <script>
+        // State variables
+        let startTime;
+        let updatedTime;
+        let difference;
+        let tInterval;
+        let running = false;
+        
+        let totalStartTime;
+        let totalDifference;
+        
+        // Counters
+        let mainTimeElapsed = 0; // The big timer
+        let totalTimeElapsed = 0; // The bottom total timer
+        let setsCount = 0;
+
+        // DOM Elements
+        const mainTimerDisplay = document.getElementById('mainTimerDisplay');
+        const mainMilliseconds = document.getElementById('mainMilliseconds');
+        const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+        const setsDisplay = document.getElementById('setsDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const lapBtn = document.getElementById('lapBtn');
+
+        function toggleTimer() {
+            if (!running) {
+                startTimer();
+            } else {
+                pauseTimer();
+            }
+        }
+
+        function startTimer() {
+            if (!running) {
+                startTime = new Date().getTime() - mainTimeElapsed;
+                totalStartTime = new Date().getTime() - totalTimeElapsed;
+                
+                tInterval = setInterval(getShowTime, 10);
+                running = true;
+                
+                // UI Updates
+                startBtn.innerHTML = "Pause";
+                startBtn.className = "h-24 rounded-2xl bg-yellow-900/80 text-yellow-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-yellow-800";
+                
+                lapBtn.className = "h-24 rounded-2xl bg-blue-900/30 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-blue-800";
+            }
+        }
+
+        function pauseTimer() {
+            if (running) {
+                clearInterval(tInterval);
+                running = false;
+                
+                // UI Updates
+                startBtn.innerHTML = "Resume";
+                startBtn.className = "h-24 rounded-2xl bg-green-900/80 text-green-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-green-800";
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(tInterval);
+            running = false;
+            
+            mainTimeElapsed = 0;
+            totalTimeElapsed = 0;
+            setsCount = 0;
+            
+            // Reset Displays
+            mainTimerDisplay.innerHTML = "00:00";
+            mainMilliseconds.innerHTML = ".00";
+            totalTimeDisplay.innerHTML = "00:00:00";
+            setsDisplay.innerHTML = "0";
+            
+            // Reset Button Styles
+            startBtn.innerHTML = "Start";
+            startBtn.className = "h-24 rounded-2xl bg-green-900/80 text-green-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-green-800";
+            lapBtn.className = "h-24 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700";
+        }
+
+        function lapTimer() {
+            // Increment sets
+            setsCount++;
+            setsDisplay.innerHTML = setsCount;
+            
+            // Reset the main timer (Interval/Recovery timer)
+            mainTimeElapsed = 0;
+            startTime = new Date().getTime(); // Reset start time to now
+            
+            // Visual feedback flash
+            const mainContainer = document.querySelector('.flex-grow');
+            
+            // Ensure timer is running if it wasn't
+            if (!running) {
+                startTimer();
+            }
+        }
+
+        function getShowTime() {
+            let now = new Date().getTime();
+            
+            // Calculate Main Timer (Interval)
+            mainTimeElapsed = now - startTime;
+            
+            // Calculate Total Timer (Session)
+            totalTimeElapsed = now - totalStartTime;
+
+            // Format Main Timer
+            let mainMinutes = Math.floor((mainTimeElapsed % (1000 * 60 * 60)) / (1000 * 60));
+            let mainSeconds = Math.floor((mainTimeElapsed % (1000 * 60)) / 1000);
+            let mainMillis = Math.floor((mainTimeElapsed % 1000) / 10);
+
+            mainMinutes = (mainMinutes < 10) ? "0" + mainMinutes : mainMinutes;
+            mainSeconds = (mainSeconds < 10) ? "0" + mainSeconds : mainSeconds;
+            mainMillis = (mainMillis < 10) ? "0" + mainMillis : mainMillis;
+
+            mainTimerDisplay.innerHTML = mainMinutes + ':' + mainSeconds;
+            mainMilliseconds.innerHTML = '.' + mainMillis;
+
+            // Format Total Timer
+            let totalHours = Math.floor((totalTimeElapsed % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let totalMinutes = Math.floor((totalTimeElapsed % (1000 * 60 * 60)) / (1000 * 60));
+            let totalSeconds = Math.floor((totalTimeElapsed % (1000 * 60)) / 1000);
+
+            totalHours = (totalHours < 10) ? "0" + totalHours : totalHours;
+            totalMinutes = (totalMinutes < 10) ? "0" + totalMinutes : totalMinutes;
+            totalSeconds = (totalSeconds < 10) ? "0" + totalSeconds : totalSeconds;
+
+            // Only show hours if > 0
+            if (totalHours > 0) {
+                 totalTimeDisplay.innerHTML = totalHours + ':' + totalMinutes + ':' + totalSeconds;
+            } else {
+                 totalTimeDisplay.innerHTML = totalMinutes + ':' + totalSeconds;
+            }
+        }
+    </script>
+</body>
+</html>
