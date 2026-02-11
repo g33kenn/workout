@@ -100,6 +100,7 @@
         // Wake Lock
         let wakeLock = null;
         let screenLockActive = false;
+        let isRequestingWakeLock = false;
 
         let totalStartTime;
         let totalDifference;
@@ -119,11 +120,12 @@
 
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
-                // If we already have a lock and it's not released, do nothing
-                if (wakeLock !== null && !wakeLock.released) {
+                // Prevent concurrent requests or if we already have a lock
+                if (isRequestingWakeLock || (wakeLock !== null && !wakeLock.released)) {
                     return;
                 }
 
+                isRequestingWakeLock = true;
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
                     wakeLock.addEventListener('release', () => {
@@ -132,9 +134,20 @@
                     console.log('Screen Wake Lock acquired:', wakeLock.released);
                 } catch (err) {
                     console.error(`${err.name}, ${err.message}`);
+                } finally {
+                    isRequestingWakeLock = false;
                 }
             }
         }
+
+        function enableAlwaysOnDisplay() {
+            screenLockActive = true;
+            requestWakeLock();
+        }
+
+        // Try to enable always-on display on any user interaction
+        document.addEventListener('click', enableAlwaysOnDisplay);
+        document.addEventListener('touchstart', enableAlwaysOnDisplay);
 
         // Visibility Change Handler
         document.addEventListener('visibilitychange', async () => {
@@ -186,14 +199,8 @@
             clearInterval(tInterval);
             running = false;
             
-            // Release Screen Wake Lock
-            screenLockActive = false;
-            if (wakeLock !== null) {
-                wakeLock.release()
-                .then(() => {
-                  wakeLock = null;
-                });
-            }
+            // Note: We deliberately do NOT release the wake lock here anymore.
+            // The user wants the screen to stay on even if they reset the timer.
 
             mainTimeElapsed = 0;
             totalTimeElapsed = 0;
