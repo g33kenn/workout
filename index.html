@@ -53,7 +53,7 @@
         <!-- Sets Counter -->
         <div class="text-center">
             <div class="text-gray-500 text-sm uppercase tracking-widest mb-1">Sets Completed</div>
-            <div id="setsDisplay" class="text-8xl font-bold text-blue-500 mono-font">1</div>
+            <div id="setsDisplay" class="text-8xl font-bold text-blue-500 mono-font">0</div>
         </div>
 
         <!-- Main Stopwatch (Recovery/Interval Timer) -->
@@ -103,7 +103,7 @@
         // Counters
         let mainTimeElapsed = 0; // The big timer
         let totalTimeElapsed = 0; // The bottom total timer
-        let setsCount = 0;
+        let setsCount = 1;
 
         // DOM Elements
         const mainTimerDisplay = document.getElementById('mainTimerDisplay');
@@ -154,7 +154,7 @@
             
             mainTimeElapsed = 0;
             totalTimeElapsed = 0;
-            setsCount = 0;
+            setsCount = 1;
             
             // Reset Displays
             mainTimerDisplay.innerHTML = "00:00";
