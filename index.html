@@ -53,12 +53,12 @@
         <!-- Sets Counter -->
         <div class="text-center">
             <div class="text-gray-500 text-sm uppercase tracking-widest mb-1">Sets Completed</div>
-            <div id="setsDisplay" class="text-8xl font-bold text-blue-500 mono-font">1</div>
+            <div id="setsDisplay" class="text-8xl font-bold text-blue-500 mono-font">0</div>
         </div>
 
         <!-- Main Stopwatch (Recovery/Interval Timer) -->
         <div class="text-center w-full">
-            <div class="text-gray-500 text-sm uppercase tracking-widest mb-2">Current Interval</div>
+            <div class="text-gray-500 text-sm uppercase tracking-widest mb-2">Recovery Time</div>
             <div id="mainTimerDisplay" class="text-7xl font-bold text-white mono-font tracking-tighter">00:00</div>
             <div id="mainMilliseconds" class="text-2xl text-gray-600 mono-font font-medium mt-1">.00</div>
         </div>
@@ -70,16 +70,18 @@
         <!-- Main Buttons -->
         <div class="grid grid-cols-2 gap-4 mb-8">
             <!-- Lap Button -->
-            <button id="lapBtn" onclick="lapTimer()" 
-                class="h-24 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700">
-                Lap
-            </button>
+			<button id="lapBtn" onclick="lapTimer()"
+			  class="h-24 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700 w-64">
+			  END OF SET
+			</button>
 
             <!-- Start/Pause Button -->
+            <!--
             <button id="startBtn" onclick="toggleTimer()" 
                 class="h-24 rounded-2xl bg-green-900/80 text-green-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-green-800">
                 Start
             </button>
+            -->
         </div>
 
         <!-- Total Time -->
@@ -108,7 +110,7 @@
         // Counters
         let mainTimeElapsed = 0; // The big timer
         let totalTimeElapsed = 0; // The bottom total timer
-        let setsCount = 1;
+        let setsCount = 0;
 
         // DOM Elements
         const mainTimerDisplay = document.getElementById('mainTimerDisplay');
