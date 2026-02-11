@@ -97,6 +97,10 @@
         let tInterval;
         let running = false;
         
+        // Wake Lock
+        let wakeLock = null;
+        let screenLockActive = false;
+
         let totalStartTime;
         let totalDifference;
         
@@ -113,6 +117,32 @@
         const startBtn = document.getElementById('startBtn');
         const lapBtn = document.getElementById('lapBtn');
 
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                // If we already have a lock and it's not released, do nothing
+                if (wakeLock !== null && !wakeLock.released) {
+                    return;
+                }
+
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Screen Wake Lock released:', wakeLock.released);
+                    });
+                    console.log('Screen Wake Lock acquired:', wakeLock.released);
+                } catch (err) {
+                    console.error(`${err.name}, ${err.message}`);
+                }
+            }
+        }
+
+        // Visibility Change Handler
+        document.addEventListener('visibilitychange', async () => {
+            if (screenLockActive && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+
         function toggleTimer() {
             if (!running) {
                 startTimer();
@@ -128,6 +158,10 @@
                 
                 tInterval = setInterval(getShowTime, 10);
                 running = true;
+
+                // Request Screen Wake Lock
+                screenLockActive = true;
+                requestWakeLock();
                 
                 // UI Updates
                 startBtn.innerHTML = "Pause";
@@ -152,6 +186,15 @@
             clearInterval(tInterval);
             running = false;
             
+            // Release Screen Wake Lock
+            screenLockActive = false;
+            if (wakeLock !== null) {
+                wakeLock.release()
+                .then(() => {
+                  wakeLock = null;
+                });
+            }
+
             mainTimeElapsed = 0;
             totalTimeElapsed = 0;
             setsCount = 1;
