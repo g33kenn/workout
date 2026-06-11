@@ -33,7 +33,12 @@
         /* Custom button press effect */
         .btn-press:active {
             transform: scale(0.96);
-            opacity: 0.9;
+            opacity: 0.85;
+            background-color: rgba(59, 130, 246, 0.25) !important;
+        }
+
+        #lapBtn {
+            transition: background-color 0.15s ease, transform 0.1s ease, opacity 0.1s ease;
         }
 
         body {
@@ -52,6 +57,9 @@
             background-color: #e5e7eb !important;
             color: #1d4ed8 !important;
             border-color: #d1d5db !important;
+        }
+        body.light #lapBtn.btn-press:active {
+            background-color: rgba(29, 78, 216, 0.15) !important;
         }
 
         /* Icon visibility */
@@ -225,7 +233,7 @@
                 screenLockActive = true;
                 requestWakeLock();
                 
-                lapBtn.className = "h-24 rounded-2xl bg-blue-900/30 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-blue-800";
+                lapBtn.className = "h-24 w-64 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700";
             }
         }
 
@@ -254,7 +262,7 @@
             totalTimeDisplay.innerHTML = "00:00:00";
             setsDisplay.innerHTML = "0";
             
-            lapBtn.className = "h-24 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700";
+            lapBtn.className = "h-24 w-64 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700";
         }
 
         function lapTimer() {
