@@ -35,13 +35,52 @@
             transform: scale(0.96);
             opacity: 0.9;
         }
+
+        body {
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* Light mode */
+        body.light { background-color: #f9fafb; color: #111827; }
+        body.light #mainTimerDisplay { color: #111827 !important; }
+        body.light #mainMilliseconds { color: #6b7280 !important; }
+        body.light #totalTimeDisplay { color: #374151 !important; }
+        body.light #setsDisplay     { color: #1d4ed8 !important; }
+        body.light .lbl             { color: #6b7280 !important; }
+        body.light .sep             { border-color: #d1d5db !important; }
+        body.light #lapBtn {
+            background-color: #e5e7eb !important;
+            color: #1d4ed8 !important;
+            border-color: #d1d5db !important;
+        }
+
+        /* Icon visibility */
+        .icon-moon { display: block; }
+        .icon-sun  { display: none;  }
+        body.light .icon-moon { display: none;  }
+        body.light .icon-sun  { display: block; }
     </style>
 </head>
 <body class="h-screen w-full flex flex-col justify-between overflow-hidden no-select p-4">
 
-    <!-- Top Bar: Reset Button -->
-    <div class="w-full flex justify-end h-12 items-start">
-        <button onclick="resetTimer()" 
+    <!-- Top Bar -->
+    <div class="w-full flex justify-between h-12 items-start">
+        <button id="themeBtn" onclick="toggleTheme()"
+            class="p-2 rounded-lg btn-press text-gray-500 hover:text-gray-300 transition-colors">
+            <!-- Moon: visible in dark mode -->
+            <svg class="icon-moon w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            <!-- Sun: visible in light mode -->
+            <svg class="icon-sun w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+        </button>
+        <button onclick="resetTimer()"
             class="text-xs text-red-400 border border-red-900 bg-red-900/20 px-3 py-2 rounded-lg btn-press hover:bg-red-900/40 transition-colors uppercase tracking-widest font-bold">
             Reset
         </button>
@@ -52,13 +91,13 @@
         
         <!-- Sets Counter -->
         <div class="text-center">
-            <div class="text-gray-500 text-sm uppercase tracking-widest mb-1">Sets Completed</div>
+            <div class="lbl text-gray-500 text-sm uppercase tracking-widest mb-1">Sets Completed</div>
             <div id="setsDisplay" class="text-8xl font-bold text-blue-500 mono-font">0</div>
         </div>
 
         <!-- Main Stopwatch (Recovery/Interval Timer) -->
         <div class="text-center w-full">
-            <div class="text-gray-500 text-sm uppercase tracking-widest mb-2">Recovery Time</div>
+            <div class="lbl text-gray-500 text-sm uppercase tracking-widest mb-2">Recovery Time</div>
             <div id="mainTimerDisplay" class="text-7xl font-bold text-white mono-font tracking-tighter">00:00</div>
             <div id="mainMilliseconds" class="text-2xl text-gray-600 mono-font font-medium mt-1">.00</div>
         </div>
@@ -85,8 +124,8 @@
         </div>
 
         <!-- Total Time -->
-        <div class="text-center border-t border-gray-800 pt-4">
-            <span class="text-gray-500 text-xs uppercase tracking-wide">Total Session Time</span>
+        <div class="text-center border-t sep border-gray-800 pt-4">
+            <span class="lbl text-gray-500 text-xs uppercase tracking-wide">Total Session Time</span>
             <div id="totalTimeDisplay" class="text-xl text-gray-400 mono-font mt-1">00:00:00</div>
         </div>
     </div>
@@ -119,6 +158,14 @@
         const setsDisplay = document.getElementById('setsDisplay');
         const startBtn = document.getElementById('startBtn');
         const lapBtn = document.getElementById('lapBtn');
+
+        function toggleTheme() {
+            const isLight = document.body.classList.toggle('light');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light');
+        }
 
         async function requestWakeLock() {
             if ('wakeLock' in navigator) {
@@ -178,10 +225,6 @@
                 screenLockActive = true;
                 requestWakeLock();
                 
-                // UI Updates
-                startBtn.innerHTML = "Pause";
-                startBtn.className = "h-24 rounded-2xl bg-yellow-900/80 text-yellow-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-yellow-800";
-                
                 lapBtn.className = "h-24 rounded-2xl bg-blue-900/30 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-blue-800";
             }
         }
@@ -191,9 +234,6 @@
                 clearInterval(tInterval);
                 running = false;
                 
-                // UI Updates
-                startBtn.innerHTML = "Resume";
-                startBtn.className = "h-24 rounded-2xl bg-green-900/80 text-green-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-green-800";
             }
         }
 
@@ -214,9 +254,6 @@
             totalTimeDisplay.innerHTML = "00:00:00";
             setsDisplay.innerHTML = "0";
             
-            // Reset Button Styles
-            startBtn.innerHTML = "Start";
-            startBtn.className = "h-24 rounded-2xl bg-green-900/80 text-green-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-green-800";
             lapBtn.className = "h-24 rounded-2xl bg-gray-800 text-blue-400 font-bold text-2xl uppercase tracking-wider btn-press shadow-lg border border-gray-700";
         }
 
